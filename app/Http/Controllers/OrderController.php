@@ -10,9 +10,34 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Midtrans\Snap;
 use Midtrans\Config;
+use Illuminate\Support\Facades\Http;
 
 class OrderController extends Controller
 {
+    public function index()
+    {
+        $response = Http::withHeaders([
+            'key'    => env('RAJAONGKIR_API_KEY'),
+            'Accept' => 'application/json',
+        ])->get(env('RAJAONGKIR_BASE_URL') . '/province');
+
+        $provinces = $response->json()['data'] ?? [];
+
+        return view('ongkir', compact('provinces'));
+    }
+
+    public function getCities($provinceId)
+    {
+        $response = Http::withHeaders([
+            'key'    => env('RAJAONGKIR_API_KEY'),
+            'Accept' => 'application/json',
+        ])->get(env('RAJAONGKIR_BASE_URL') . '/city/' . $provinceId); // gunakan concatenation
+
+        $cities = $response->json()['data'] ?? [];
+
+        return response()->json($cities); // kembalikan JSON, bukan view
+    }
+
     public function addToCart($id)
     {
         $customer = Customer::where('user_id', Auth::id())->first();

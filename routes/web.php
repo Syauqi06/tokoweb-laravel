@@ -87,25 +87,25 @@ Route::middleware('is.customer')->group(function () {
     Route::get('order/invoice/{id}', [OrderController::class, 'invoiceFrontend'])->name('order.invoice');
 });
 
-Route::get('/rajaongkir-list1', function () {
-    $response = Http::withHeaders([
-        'key' => '794a5d197b9cb469ae958ed043ccf921'
-    ])->get('https://api.rajaongkir.com/starter/province'); //bisa ganti dengan 'province' atau 'city'
-    // $statusCode = $response->json()['rajaongkir']['status']['code'];
-    // $provisi = $response->json()['rajaongkir']['results'];
-    dd($response->json());
-});
+// Route::get('/rajaongkir-list1', function () {
+//     $response = Http::withHeaders([
+//         'key' => '8wFS3nN5e5a4f34573cc0bf3ij8S8ZVp'
+//     ])->get('https://rajaongkir.komerce.id/api/v1/destination/province'); //bisa ganti dengan 'province' atau 'city'
+//     // $statusCode = $response->json()['rajaongkir']['status']['code'];
+//     // $provisi = $response->json()['rajaongkir']['results'];
+//     // dd($response->json());
+// });
 
-Route::get('/rajaongkir-list2', function () {
-    $response = Http::withHeaders([
-        'key' => '794a5d197b9cb469ae958ed043ccf921'
-    ])->get('https://api.rajaongkir.com/starter/province'); //bisa ganti dengan 'province' atau 'city'
-    return $response->json();
-});
+// Route::get('rajaongkir-list', [RajaOngkirController::class, 'getProvinces']);
 
-Route::get('/cek-ongkir', function () {
-    return view('ongkir');
-});
+// Route::get('/rajaongkir-list2', function () {
+//     $response = Http::withHeaders([
+//         'key' => '8wFS3nN5e5a4f34573cc0bf3ij8S8ZVp'
+//     ])->get('https://rajaongkir.komerce.id/api/v1/province'); //bisa ganti dengan 'province' atau 'city'
+//     return $response->json();
+// });
+
+Route::get('/cek-ongkir', [RajaOngkirController::class, 'index']);
 Route::get('/provinces', [RajaOngkirController::class, 'getProvinces']);
-Route::get('/cities', [RajaOngkirController::class, 'getCities']);
+Route::get('/cities/{provinceId}', [RajaOngkirController::class, 'getCities']);
 Route::post('/cost', [RajaOngkirController::class, 'getCost']);

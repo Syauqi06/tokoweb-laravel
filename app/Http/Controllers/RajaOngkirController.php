@@ -7,43 +7,44 @@ use Illuminate\Support\Facades\Http;
 
 class RajaOngkirController extends Controller
 {
+    public function index()
+    {
+        return view('ongkir');
+    }
+
     public function getProvinces()
     {
         $response = Http::withHeaders([
-            'key' => env('RAJAONGKIR_API_KEY')
+            'key'    => env('RAJAONGKIR_API_KEY'),
+            'Accept' => 'application/json',
         ])->get(env('RAJAONGKIR_BASE_URL') . '/province');
 
-        return response()->json($response->json());
+        // Ambil hanya bagian 'data' saja
+        return response()->json($response->json()['data'] ?? []);
     }
 
-    public function getCities(Request $request)
+    public function getCities($provinceId)
     {
-        $provinceId = $request->input('province_id');
         $response = Http::withHeaders([
-            'key' => env('RAJAONGKIR_API_KEY')
-        ])->get(env('RAJAONGKIR_BASE_URL') . '/city', [
-            'province' => $provinceId
-        ]);
+            'key'    => env('RAJAONGKIR_API_KEY'),
+            'Accept' => 'application/json',
+        ])->get(env('RAJAONGKIR_BASE_URL') . '/city/' . $provinceId);
 
-        return response()->json($response->json());
+        return response()->json($response->json()['data'] ?? []);
     }
 
     public function getCost(Request $request)
     {
-        $origin = $request->input('origin');
-        $destination = $request->input('destination');
-        $weight = $request->input('weight');
-        $courier = $request->input('courier');
-
-        $response = Http::withHeaders([
-            'key' => env('RAJAONGKIR_API_KEY')
-        ])->post(env('RAJAONGKIR_BASE_URL') . '/cost', [
-            'origin' => $origin,
-            'destination' => $destination,
-            'weight' => $weight,
-            'courier' => $courier,
+        $response = Http::asForm()->withHeaders([
+            'key'    => env('RAJAONGKIR_API_KEY'),
+            'Accept' => 'application/json',
+        ])->post(env('RAJAONGKIR_CALCULATE_URL') . '/domestic-cost', [
+            'origin'      => $request->input('origin'),
+            'destination' => $request->input('destination'),
+            'weight'      => (int) $request->input('weight'),
+            'courier'     => $request->input('courier'),
         ]);
 
-        return response()->json($response->json());
+        return response()->json($response->json()['data'] ?? []);
     }
 }

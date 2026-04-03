@@ -69,16 +69,17 @@
 
             <div class="form-group">
                 <label for="province">Provinsi Tujuan:</label>
-                <select name="province" id="province" class="input">
-                    <option value="">Pilih Provinsi Tujuan</option>
-                    <!-- Data Provinsi Tujuan akan dimuat dengan JavaScript -->
+                <select name="province" id="province">
+                    <option value="">Pilih Provinsi</option>
+                    @foreach ($provinces as $province)
+                        <option value="{{ $province['id'] }}">{{ $province['name'] }}</option>
+                    @endforeach
                 </select>
             </div>
             <div class="form-group">
                 <label for="city">Kota Tujuan:</label>
-                <select name="city" id="city" class="input">
-                    <option value="">Pilih Kota Tujuan</option>
-                    <!-- Data Kota Tujuan akan dimuat dengan JavaScript -->
+                <<select name="cities" id="cities">
+                    <option value="">Pilih Kota</option>
                 </select>
             </div>
             <input type="hidden" name="weight" id="weight" value="{{ $totalBerat }}">
@@ -127,66 +128,36 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const originCityCode = 115; //ganti disini untuk kode kota asal 
-        const originCityName = 'Depok'; //ganti disini untuk nama kota asal 
+    document.getElementById('province').addEventListener('change', function () {
+            const provinceId = this.value;
+            const citySelect = document.getElementById('cities');
+            citySelect.innerHTML = '<option value="">Pilih Kota</option>';
 
-        document.getElementById('city_origin').value = originCityCode;
-        document.getElementById('city_origin_name').value = originCityName;
+            if (!provinceId) return;
 
-        // Load provinces
-        fetch('/provinces')
-            .then(response => response.json())
-            .then(data => {
-                if (data.rajaongkir.status.code === 200) {
-                    let provinces = data.rajaongkir.results;
-                    let provinceSelect = document.getElementById('province');
-                    provinces.forEach(province => {
-                        let option = document.createElement('option');
-                        option.value = province.province_id;
-                        option.textContent = province.province;
-                        provinceSelect.appendChild(option);
-                    });
-                } else {
-                    console.error('Failed to fetch provinces', data.rajaongkir.status.description);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching provinces:', error);
-            });
-
-        // Load cities based on selected province
-        document.getElementById('province').addEventListener('change', function() {
-            let provinceId = this.value;
-            let provinceName = this.options[this.selectedIndex].text;
-            document.getElementById('province_name').value = provinceName;
-
-            fetch(`/cities?province_id=${provinceId}`)
-                .then(response => response.json())
+            fetch(`/cities/${provinceId}`)
+                .then(res => res.json())
                 .then(data => {
-                    if (data.rajaongkir.status.code === 200) {
-                        let cities = data.rajaongkir.results;
-                        let citySelect = document.getElementById('city');
-                        citySelect.innerHTML = '<option value="">Pilih Kota Tujuan</option>'; // Clear previous options
-                        cities.forEach(city => {
-                            let option = document.createElement('option');
-                            option.value = city.city_id;
-                            option.textContent = city.city_name;
-                            citySelect.appendChild(option);
-                        });
-                    } else {
-                        console.error('Failed to fetch cities', data.rajaongkir.status.description);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching cities:', error);
+                    data.forEach(city => {
+                        let option = document.createElement('option');
+                        option.value = city.id;
+                        option.textContent = city.name;
+                        citySelect.appendChild(option);
+                    });
                 });
         });
 
-        document.getElementById('city').addEventListener('change', function() {
-            let cityName = this.options[this.selectedIndex].text;
-            document.getElementById('city_name').value = cityName;
-        });
+        // Cost — data langsung array hasil ongkir
+        fetch('/cost', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                // data = [ {courier_name, service, cost, etd, ...}, ... ]
+                data.forEach(item => {
+                    let div = document.createElement('div');
+                    div.textContent = `${item.courier_name} ${item.service} : Rp${item.cost} (${item.etd})`;
+                    resultDiv.appendChild(div);
+                });
+            });
 
         // Handle form submission for shipping cost check
         document.getElementById('shippingForm').addEventListener('submit', function(event) {
