@@ -67,7 +67,7 @@ class OrderController extends Controller
         $validatedData = $request->validate($rules);
         Order::where('id', $id)->update($validatedData);
 
-        return redirect()->route('pesanan.proses')->with('success', 'Data berhasil diperbaharui'); // ← satu baris
+        return redirect()->route('pesanan.proses')->with('success', 'Data berhasil diperbaharui');
     }
 
     public function addToCart($id)
@@ -142,8 +142,9 @@ class OrderController extends Controller
 
         $order = Order::where('customer_id', $customer->id)
             ->where('status', 'pending')
-            ->first(); // ← perbaiki method chaining yang terpotong
+            ->first(); //
 
+        // Pengecekan null sebelum diakses untuk orderItems
         if ($order) {
             foreach ($order->orderItems as $item) {
                 $produk = $item->produk;
@@ -155,7 +156,7 @@ class OrderController extends Controller
                 }
             }
 
-            $order->status = 'Paid'; // ← sesuaikan dengan status di orderHistory()
+            $order->status = 'Paid'; //
             $order->save();
         }
 
@@ -176,7 +177,7 @@ class OrderController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        return view('v_order.history', compact('orders'));
+        return view('v_order.history', compact('orders')); // compact orders untuk mengirim data ke view
     }
 
     public function removeFromCart(Request $request, $id)
@@ -240,7 +241,7 @@ class OrderController extends Controller
             $order->total_berat    = $request->input('total_berat');
             $order->alamat         = $request->input('alamat') . ', <br>' .
                                     $request->input('city_name') . ', <br>' .
-                                    $request->input('province_name'); // perbaiki terpotong
+                                    $request->input('province_name');
             $order->pos            = $request->input('pos');
             $order->save();
 
@@ -276,7 +277,7 @@ class OrderController extends Controller
 
         $grossAmount = $totalHarga + $order->biaya_ongkir;
 
-        Config::$serverKey    = config('midtrans.server_key');
+        Config::$serverKey    = env('MIDTRANS_SERVER_KEY');
         Config::$isProduction = false;
         Config::$isSanitized  = true;
         Config::$is3ds        = true;
@@ -410,7 +411,7 @@ class OrderController extends Controller
         }
     }
 
-    public function complete() // Untuk kondisi local
+    public function complete() // saat callback, langsung update status ke Paid
     {
         // Dapatkan customer yang login
         $customer = Auth::user();
@@ -421,7 +422,6 @@ class OrderController extends Controller
             ->first();
 
         if ($order) {
-            // Update status order menjadi 'Paid'
             $order->status = 'Paid';
             $order->save();
         }

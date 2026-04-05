@@ -30,7 +30,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Fetch Provinsi
+            // Fetch Provinsi
             fetch('/provinces')
                 .then(response => response.json())
                 .then(data => {
@@ -38,14 +38,14 @@
                     let provinceSelect = document.getElementById('province');
                     data.forEach(province => {
                         let option = document.createElement('option');
-                        option.value = province.id;           // bukan province_id
-                        option.textContent = province.name;   // bukan province
+                        option.value = province.id;
+                        option.textContent = province.name;
                         provinceSelect.appendChild(option);
                     });
                 })
                 .catch(error => console.error('Error fetching provinces:', error));
 
-            // 2. Fetch Kota Berdasarkan Provinsi
+            // Fetch Kota Berdasarkan Provinsi
             document.getElementById('province').addEventListener('change', function() {
                 let provinceId = this.value;
                 let citySelect = document.getElementById('city');
@@ -53,7 +53,7 @@
                 citySelect.innerHTML = '<option value="">Pilih Kota</option>';
 
                 if (provinceId) {
-                    fetch(`/cities/${provinceId}`)   // bukan /cities?province_id=
+                    fetch(`/cities/${provinceId}`) // Mengambil data kota berdasarkan provinsi yang dipilih
                         .then(response => response.json())
                         .then(data => {
                             data.forEach(city => {
@@ -68,11 +68,11 @@
             });
             
 
-            // 3. Submit Cek Ongkir
+            // Submit Cek Ongkir
             document.getElementById('ongkirForm').addEventListener('submit', function(event) {
                 event.preventDefault();
 
-                let origin      = 501;
+                let origin      = 501; 
                 let destination = document.getElementById('city').value;
                 let weight      = document.getElementById('weight').value;
                 let courier     = document.getElementById('courier').value;

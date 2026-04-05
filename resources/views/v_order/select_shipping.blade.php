@@ -129,11 +129,11 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-        // 1. Fetch Provinsi saat halaman load ← INI YANG KURANG
+        // Fetch Provinsi saat halaman dimuat
         fetch('/provinces')
-            .then(res => res.json())
+            .then(res => res.json()) // Mengambil data provinsi dari endpoint /provinces
             .then(data => {
-                let provinceSelect = document.getElementById('province');
+                let provinceSelect = document.getElementById('province'); // Mendapatkan elemen select untuk provinsi
                 data.forEach(province => {
                     let option = document.createElement('option');
                     option.value = province.id;
@@ -143,7 +143,7 @@
             })
             .catch(error => console.error('Error fetching provinces:', error));
 
-        // 2. Fetch Kota saat Provinsi dipilih
+        // Fetch Kota saat Provinsi dipilih
         document.getElementById('province').addEventListener('change', function () {
             const provinceId = this.value;
             const citySelect = document.getElementById('cities');
@@ -151,11 +151,11 @@
 
             // Simpan nama provinsi ke hidden input
             let selectedOption = this.options[this.selectedIndex];
-            document.getElementById('province_name').value = selectedOption.text;
+            document.getElementById('province_name').value = selectedOption.text; // Simpan nama kota ke hidden input (reset saat provinsi berubah)
 
-            if (!provinceId) return;
+            if (!provinceId) return; // Jika tidak ada provinsi yang dipilih, hentikan eksekusi
 
-            fetch(`/cities/${provinceId}`)
+            fetch(`/cities/${provinceId}`) // Mengambil data kota berdasarkan provinsi yang dipilih
                 .then(res => res.json())
                 .then(data => {
                     data.forEach(city => {
@@ -174,7 +174,7 @@
             document.getElementById('city_name').value = selectedOption.text;
         });
 
-        // 3. Handle form submission
+        // Handle form submission
         document.getElementById('shippingForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
@@ -198,19 +198,19 @@
             fetch('/cost', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'Content-Type': 'application/json', // Menentukan tipe konten sebagai JSON
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') 
                 },
                 body: JSON.stringify({
                     origin:      origin,
                     destination: destination,
-                    weight:      parseInt(weight),
+                    weight:      parseInt(weight), // Parseint untuk memastikan weight dikirim sebagai angka
                     courier:     courier
                 })
             })
             .then(response => response.json())
             .then(data => {
-                // console.log('Cost response:', data); // ← tambahkan ini
+                // console.log('Cost response:', data); //
                 // console.log('Origin:', origin);
                 // console.log('Destination:', destination);
                 // console.log('Weight:', weight);

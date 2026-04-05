@@ -22,9 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer('*', function ($view) {
-        $kategori = DB::table('kategori')->orderBy('nama_kategori', 'asc')->get();
-        $view->with('kategori', $kategori);
+        Paginator::useBootstrap(); // Menggunakan Bootstrap untuk pagination 
+        View::composer('*', function ($view) { // Mengambil data kategori dari database dan mengirimkannya ke semua view
+        $kategori = DB::table('kategori')->orderBy('nama_kategori', 'asc')->get(); // Mengambil data kategori dari database dan mengurutkannya berdasarkan nama_kategori secara ascending
+        $view->with('kategori', $kategori); // Mengirim data kategori ke semua view dengan nama variabel 'kategori'
         });
 
     }
