@@ -76,10 +76,10 @@ Route::middleware('is.customer')->group(function () {
     Route::get('cart', [OrderController::class, 'viewCart'])->name('order.cart');
     Route::post('cart/update/{id}', [OrderController::class, 'updateCart'])->name('order.updateCart');
     Route::post('remove/{id}', [OrderController::class, 'removeFromCart'])->name('order.remove');
-    Route::post('select-shipping', [OrderController::class, 'selectShipping'])->name('order.select-shipping');
+    Route::post('select_shipping', [OrderController::class, 'selectShipping'])->name('order.select_shipping');
     Route::post('update-ongkir', [OrderController::class, 'updateOngkir'])->name('order.update-ongkir');
     //midtrans
-    Route::get('select-payment', [OrderController::class, 'selectPayment'])->name('order.selectpayment');
+    Route::get('select_payment', [OrderController::class, 'selectPayment'])->name('order.select_payment');
     Route::post('/midtrans-callback', [OrderController::class, 'callback']);
     Route::get('/order/complete', [OrderController::class, 'complete'])->name('order.complete');
     // Route history

@@ -16,14 +16,14 @@ class CustomerController extends Controller
     // Redirect ke Google
     public function redirect()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')->redirect(); // Redirect ke halaman login Google dengan socialite sebagai driver
     }
 
     // Callback dari Google
     public function callback()
     {
         try {
-            $socialUser = Socialite::driver('google')->user();
+            $socialUser = Socialite::driver('google')->user(); // Mendapatkan informasi pengguna dari Google setelah login berhasil
 
             // Cek apakah email sudah terdaftar
             $registeredUser = User::where('email', $socialUser->email)->first();
@@ -54,7 +54,7 @@ class CustomerController extends Controller
 
             // Redirect ke halaman utama
             return redirect()->intended('beranda');
-        } catch (\Exception $e) {
+        } catch (\Exception $e) { // Tangani kesalahan jika terjadi masalah saat login dengan Google
             // Redirect ke halaman utama jika terjadi kesalahan
             return redirect('/')->with('error', 'Terjadi kesalahan saat login dengan Google.');
         }

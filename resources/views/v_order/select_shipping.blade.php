@@ -69,19 +69,18 @@
 
             <div class="form-group">
                 <label for="province">Provinsi Tujuan:</label>
-                <select name="province" id="province">
+                <select name="province" id="province" class="input">
                     <option value="">Pilih Provinsi</option>
-                    @foreach ($provinces as $province)
-                        <option value="{{ $province['id'] }}">{{ $province['name'] }}</option>
-                    @endforeach
                 </select>
             </div>
+            
             <div class="form-group">
                 <label for="city">Kota Tujuan:</label>
-                <<select name="cities" id="cities">
+                <select name="cities" id="cities" class="input">
                     <option value="">Pilih Kota</option>
                 </select>
             </div>
+            
             <input type="hidden" name="weight" id="weight" value="{{ $totalBerat }}">
             <input type="hidden" name="province_name" id="province_name">
             <input type="hidden" name="city_name" id="city_name">
@@ -128,10 +127,31 @@
 
 
 <script>
-    document.getElementById('province').addEventListener('change', function () {
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // 1. Fetch Provinsi saat halaman load ← INI YANG KURANG
+        fetch('/provinces')
+            .then(res => res.json())
+            .then(data => {
+                let provinceSelect = document.getElementById('province');
+                data.forEach(province => {
+                    let option = document.createElement('option');
+                    option.value = province.id;
+                    option.textContent = province.name;
+                    provinceSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching provinces:', error));
+
+        // 2. Fetch Kota saat Provinsi dipilih
+        document.getElementById('province').addEventListener('change', function () {
             const provinceId = this.value;
             const citySelect = document.getElementById('cities');
             citySelect.innerHTML = '<option value="">Pilih Kota</option>';
+
+            // Simpan nama provinsi ke hidden input
+            let selectedOption = this.options[this.selectedIndex];
+            document.getElementById('province_name').value = selectedOption.text;
 
             if (!provinceId) return;
 
@@ -144,100 +164,98 @@
                         option.textContent = city.name;
                         citySelect.appendChild(option);
                     });
-                });
+                })
+                .catch(error => console.error('Error fetching cities:', error));
         });
 
-        // Cost — data langsung array hasil ongkir
-        fetch('/cost', { method: 'POST' })
-            .then(res => res.json())
-            .then(data => {
-                // data = [ {courier_name, service, cost, etd, ...}, ... ]
-                data.forEach(item => {
-                    let div = document.createElement('div');
-                    div.textContent = `${item.courier_name} ${item.service} : Rp${item.cost} (${item.etd})`;
-                    resultDiv.appendChild(div);
-                });
-            });
+        // Simpan nama kota ke hidden input saat kota dipilih
+        document.getElementById('cities').addEventListener('change', function () {
+            let selectedOption = this.options[this.selectedIndex];
+            document.getElementById('city_name').value = selectedOption.text;
+        });
 
-        // Handle form submission for shipping cost check
-        document.getElementById('shippingForm').addEventListener('submit', function(event) {
+        // 3. Handle form submission
+        document.getElementById('shippingForm').addEventListener('submit', function (event) {
             event.preventDefault();
-            let origin = document.getElementById('city_origin').value;
-            let originName = document.getElementById('city_origin_name').value;
-            let destination = document.getElementById('city').value;
-            let weight = document.getElementById('weight').value;
-            let courier = document.getElementById('courier').value;
-            let alamat = document.getElementById('alamat').value;
-            let kodePos = document.getElementById('kode_pos').value;
 
-            // Validasi alamat dan kode pos
+            let origin      = 63;
+            let destination = document.getElementById('cities').value;
+            let weight      = document.getElementById('weight').value;
+            let courier     = document.getElementById('courier').value;
+            let alamat      = document.getElementById('alamat').value;
+            let kodePos     = document.getElementById('kode_pos').value;
+
             if (!alamat.trim() || !kodePos.trim()) {
-                alert('Harap lengkapi alamat dan kode pos sebelum mengecek ongkir.');
+                alert('Harap lengkapi alamat dan kode pos.');
                 return;
             }
 
-            if (!origin || !originName || !destination || !weight || !courier) {
-                alert('Harap lengkapi semua kolom sebelum mengecek ongkir.');
+            if (!destination || !weight || !courier) {
+                alert('Harap lengkapi semua kolom.');
                 return;
             }
 
             fetch('/cost', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        origin: origin,
-                        destination: destination,
-                        weight: weight,
-                        courier: courier
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    origin:      origin,
+                    destination: destination,
+                    weight:      parseInt(weight),
+                    courier:     courier
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.rajaongkir.status.code === 200) {
-                        let result = data.rajaongkir.results[0].costs;
-                        let shippingResults = document.getElementById('shippingResults');
-                        shippingResults.innerHTML = ''; // Clear previous results
-                        result.forEach(cost => {
-                            let row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${cost.service}</td>
-                                <td>${cost.cost[0].value} Rupiah</td>
-                                <td>${cost.cost[0].etd} hari</td>
-                                <td>${weight} Gram</td>
-                                <td>Rp. {{ number_format($totalHarga, 0, ',', '.') }}</td>
-                                <td>
-                                    <form action="{{ route('order.update-ongkir') }}" method="post">
-                                        @csrf
-                                        <input type="hidden" name="province" value="${document.getElementById('province').value}">
-                                        <input type="hidden" name="city" value="${document.getElementById('city').value}">
-                                        <input type="hidden" name="province_name" value="${document.getElementById('province_name').value}">
-                                        <input type="hidden" name="city_name" value="${document.getElementById('city_name').value}">
-                                        <input type="hidden" name="kurir" value="${courier}">
-                                        <input type="hidden" name="alamat" value="${alamat}">
-                                        <input type="hidden" name="pos" value="${kodePos}">
-                                        <input type="hidden" name="layanan_ongkir" value="${cost.service}">
-                                        <input type="hidden" name="biaya_ongkir" value="${cost.cost[0].value}">
-                                        <input type="hidden" name="estimasi_ongkir" value="${cost.cost[0].etd}">
-                                        <input type="hidden" name="total_berat" value="${weight}">
-                                        <input type="hidden" name="city_origin" value="${origin}">
-                                        <input type="hidden" name="city_origin_name" value="${originName}">
-                                        <button type="submit" class="primary-btn">Pilih Pengiriman</button>
-                                    </form>
-                                </td>
-                            `;
-                            shippingResults.appendChild(row);
-                        });
-                    } else {
-                        console.error('Failed to fetch cost', data.rajaongkir.status.description);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching cost:', error);
+            })
+            .then(response => response.json())
+            .then(data => {
+                // console.log('Cost response:', data); // ← tambahkan ini
+                // console.log('Origin:', origin);
+                // console.log('Destination:', destination);
+                // console.log('Weight:', weight);
+                // console.log('Courier:', courier);
+                let shippingResults = document.getElementById('shippingResults');
+                shippingResults.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    shippingResults.innerHTML = '<tr><td colspan="6">Layanan tidak tersedia.</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    let row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.service}</td>
+                        <td>Rp ${item.cost.toLocaleString()}</td>
+                        <td>${item.etd}</td>
+                        <td>${weight} Gram</td>
+                        <td>Rp. {{ number_format($totalHarga, 0, ',', '.') }}</td>
+                        <td>
+                            <form action="{{ route('order.update-ongkir') }}" method="post">
+                                @csrf
+                                <input type="hidden" name="province" value="${document.getElementById('province').value}">
+                                <input type="hidden" name="city" value="${document.getElementById('cities').value}">
+                                <input type="hidden" name="province_name" value="${document.getElementById('province_name').value}">
+                                <input type="hidden" name="city_name" value="${document.getElementById('city_name').value}">
+                                <input type="hidden" name="kurir" value="${courier}">
+                                <input type="hidden" name="alamat" value="${alamat}">
+                                <input type="hidden" name="pos" value="${kodePos}">
+                                <input type="hidden" name="layanan_ongkir" value="${item.service}">
+                                <input type="hidden" name="biaya_ongkir" value="${item.cost}">
+                                <input type="hidden" name="estimasi_ongkir" value="${item.etd}">
+                                <input type="hidden" name="total_berat" value="${weight}">
+                                <input type="hidden" name="city_origin" value="${origin}">
+                                <button type="submit" class="primary-btn">Pilih Pengiriman</button>
+                            </form>
+                        </td>
+                    `;
+                    shippingResults.appendChild(row);
                 });
+            })
+            .catch(error => console.error('Error fetching cost:', error));
         });
+
     });
 </script>
 

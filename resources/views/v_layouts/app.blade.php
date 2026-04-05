@@ -5,6 +5,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('image/icon_univ_bsi.png') }}">
@@ -71,7 +73,7 @@
                     <ul class="header-btns">
                         <!-- Cart -->
                         <li class="header-cart dropdown default-dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                            <a href="{{ route('order.cart') }}" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
                                 <div class="header-btns-icon">
                                     <i class="fa fa-shopping-cart"></i>
                                 </div>
@@ -92,7 +94,7 @@
                             <ul class="custom-menu">
                                 <li><a href="{{ route('customer.akun', ['id' => Auth::user()->id]) }}"><i class="fa fa-user-o"></i> Akun Saya</a></li>
                                 <li><a href="#"><i class="fa fa-heart-o"></i> Riwayat</a></li>
-                                <li><a href="#" onclick="event.preventdefault(); document.getElemntById('keluar-app').submit();"><i class="fa fa-power-off"></i> Keluar</a>
+                                <li><a href="#" onclick="event.preventDefault(); document.getElementById('keluar-app').submit();"><i class="fa fa-power-off"></i> Keluar</a>
                                     {{-- Form Logout --}}
                                     <form id="keluar-app" action="{{ route('customer.logout') }}" method="POST" class="d-none">
                                         @csrf
@@ -250,14 +252,14 @@
                 <div id="aside" class="col-md-3">
                     <!-- aside widget -->
                     <div class="aside">
-                        <h3 class="aside-title">Top Rated Product</h3>
+                        <h3 class="aside-title">Produk Gacor</h3>
                         <!-- widget product -->
                         <div class="product product-widget">
                             <div class="product-thumb">
-                                <img src="{{ asset('frontend/img/thumb-product01.jpg') }}" alt="">
+                                <img src="{{ asset('image/mochi.jpg') }}" alt="">
                             </div>
                             <div class="product-body">
-                                <h2 class="product-name"><a href="#">Product Name Goes Here</a></h2>
+                                <h2 class="product-name"><a href="{{ route('produk.all') }}">Mochi</a></h2>
                                 <h3 class="product-price">$32.50 <del class="product-old-price">$45.00</del></h3>
                                 <div class="product-rating">
                                     <i class="fa fa-star"></i>
@@ -273,10 +275,10 @@
                         <!-- widget product -->
                         <div class="product product-widget">
                             <div class="product-thumb">
-                                <img src="{{ asset('frontend/img/thumb-product01.jpg') }}" alt="">
+                                <img src="{{ asset('image/wingko.jpg') }}" alt="">
                             </div>
                             <div class="product-body">
-                                <h2 class="product-name"><a href="#">Product Name Goes Here</a></h2>
+                                <h2 class="product-name"><a href="{{ route('produk.all') }}">Wingko</a></h2>
                                 <h3 class="product-price">$32.50</h3>
                                 <div class="product-rating">
                                     <i class="fa fa-star"></i>
@@ -340,7 +342,7 @@
                         <!-- footer logo -->
                         <div class="footer-logo">
                             <a class="logo" href="#">
-                                <img src="./img/logo.png" alt="">
+                                <img src="{{ asset('image/logo.png') }}" alt="Logo">
                             </a>
                         </div>
                         <!-- /footer logo -->

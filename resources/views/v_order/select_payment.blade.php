@@ -96,6 +96,11 @@
         @endif
     </div>
 </div>
+
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" 
+        data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}">
+    </script>
+
 <script type="text/javascript">
     var payButton = document.getElementById('pay-button');
     payButton.addEventListener('click', function() {

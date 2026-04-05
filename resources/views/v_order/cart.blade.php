@@ -77,7 +77,7 @@
             </tbody>
         </table>
 
-        <form action="{{ route('order.select-shipping') }}" method="post">
+        <form action="{{ route('order.select_shipping') }}" method="post">
             @csrf
             <input type="hidden" name="total_price" value="{{ $totalHarga }}">
             <input type="hidden" name="total_weight" value="{{ $totalBerat }}">
