@@ -15,6 +15,7 @@ class IsCustomer
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Jika user sudah login dan role-nya adalah 2 (customer), maka lanjutkan ke request berikutnya
         if (auth()->check() && auth()->user()->role == 2) {
             return $next($request);
         }

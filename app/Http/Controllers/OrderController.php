@@ -146,9 +146,11 @@ class OrderController extends Controller
 
         // Pengecekan null sebelum diakses untuk orderItems
         if ($order) {
+            // cek stok produk sebelum checkout
             foreach ($order->orderItems as $item) {
                 $produk = $item->produk;
                 if ($produk->stok >= $item->quantity) {
+                    // Kurangi stok produk sesuai dengan quantity yang dipesan
                     $produk->stok -= $item->quantity;
                     $produk->save();
                 } else {
@@ -156,7 +158,7 @@ class OrderController extends Controller
                 }
             }
 
-            $order->status = 'Paid'; //
+            $order->status = 'Paid'; // Update status ke Paid setelah checkout
             $order->save();
         }
 
@@ -270,18 +272,22 @@ class OrderController extends Controller
 
         $order->load('orderItems.produk');
 
+        // Hitung total harga produk
         $totalHarga = 0;
         foreach ($order->orderItems as $item) {
             $totalHarga += $item->harga * $item->quantity;
         }
 
+        // Tambahkan biaya ongkir ke total harga
         $grossAmount = $totalHarga + $order->biaya_ongkir;
 
+        // Midtrans configuration gunakan sandbox untuk testing
         Config::$serverKey    = env('MIDTRANS_SERVER_KEY');
         Config::$isProduction = false;
         Config::$isSanitized  = true;
         Config::$is3ds        = true;
 
+        // Generate unique order_id untuk Midtrans agar tidak terjadi duplikasi
         $orderId = $order->id . '-' . time();
 
         $params = [
@@ -296,6 +302,7 @@ class OrderController extends Controller
             ],
         ];
 
+        // Generate Snap Token untuk pembayaran
         $snapToken = Snap::getSnapToken($params);
 
         return view('v_order.select_payment', [
@@ -401,10 +408,13 @@ class OrderController extends Controller
     public function callback(Request $request)
     {
         // dd($request->all());
-        $serverKey = config('midtrans.server_key');
+        $serverKey = env('MIDTRANS_SERVER_KEY');
+        // verifikasi signature key untuk memastikan callback benar-benar dari Midtrans
         $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
         if ($hashed == $request->signature_key) {
-            $order = Order::find($request->order_id);
+            // Update status order berdasarkan order_id yang dikirim Midtrans
+            $orderId = explode('-', $request->order_id)[0];
+            $order = Order::find($orderId);
             if ($order) {
                 $order->update(['status' => 'Paid']);
             }
