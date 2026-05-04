@@ -16,7 +16,9 @@ class CustomerController extends Controller
     // Redirect ke Google
     public function redirect()
     {
-        return Socialite::driver('google')->redirect(); // Redirect ke halaman login Google dengan socialite sebagai driver
+        $url = Socialite::driver('google')->redirect()->getTargetUrl();
+        $url .= '&prompt=select_account';
+        return redirect($url);
     }
 
     // Callback dari Google
